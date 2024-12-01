@@ -1,0 +1,53 @@
+// © CCE_Charts
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+//@version=6
+indicator("CCE - Volume Trade Start", overlay=false)
+
+// MA length setting
+ma_length = input.int(6, "MA Length", minval=1)
+
+// Calculate MA for volume and RSI
+vol_ma = ta.sma(volume, ma_length)
+price_ma = ta.sma(close, ma_length)
+rsi = ta.rsi(close, 6)
+
+// Define conditions
+ma_rising = vol_ma > vol_ma[1]
+is_bearish = close < open
+is_bullish = close >= open
+
+// Define colors
+color_bearish = color.new(color.red, 0)
+color_bullish = color.new(color.green, 0)
+color_default = color.new(color.gray, 70)
+
+// Store previous valid signal
+var color active_trend = color_default
+var bool in_trend = false
+
+// Start new trend - added ma_rising condition
+if not in_trend and volume > vol_ma and ma_rising
+    if (rsi > 70 and is_bullish) or (rsi < 30 and is_bearish)
+        in_trend := true
+        active_trend := is_bullish ? color_bullish : color_bearish
+
+// Continue trend based on MA rising OR RSI above/below 50
+if in_trend
+    if active_trend == color_bullish and not (ma_rising or rsi > 50)
+        in_trend := false
+    else if active_trend == color_bearish and not (ma_rising or rsi < 50)
+        in_trend := false
+
+// Final bar color determination
+bar_color = in_trend ? active_trend : color_default
+
+// Plot volume bars
+plot(volume, title="Volume", style=plot.style_columns, color=bar_color)
+
+// Plot MA line
+plot(vol_ma, title="Volume MA", color=color.blue, linewidth=2)
