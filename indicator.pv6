@@ -38,9 +38,9 @@ if not in_trend and volume > vol_ma and ma_rising
 
 // Continue trend based on MA rising OR RSI above/below 50
 if in_trend
-    if active_trend == color_bullish and not (ma_rising or rsi > 50)
+    if active_trend == color_bullish and (not ma_rising or rsi < 50)
         in_trend := false
-    else if active_trend == color_bearish and not (ma_rising or rsi < 50)
+    else if active_trend == color_bearish and (not ma_rising or rsi > 50)
         in_trend := false
 
 // Final bar color determination
