@@ -30,17 +30,20 @@ color_default = color.new(color.gray, 70)
 var color active_trend = color_default
 var bool in_trend = false
 
-// Start new trend - added ma_rising condition
+// Start new trend
 if not in_trend and volume > vol_ma and ma_rising
-    if (rsi > 70 and is_bullish) or (rsi < 30 and is_bearish)
+    if (rsi > 70 and is_bullish)
         in_trend := true
-        active_trend := is_bullish ? color_bullish : color_bearish
+        active_trend := color_bullish
+    else if (rsi < 30 and is_bearish)
+        in_trend := true
+        active_trend := color_bearish
 
 // Continue trend based on MA rising OR RSI above/below 50
 if in_trend
-    if active_trend == color_bullish and (not ma_rising or rsi < 50)
+    if active_trend == color_bullish and rsi < 50  // Upravená podmínka pro bullish
         in_trend := false
-    else if active_trend == color_bearish and (not ma_rising or rsi > 50)
+    else if active_trend == color_bearish and rsi > 50  // Upravená podmínka pro bearish
         in_trend := false
 
 // Final bar color determination
